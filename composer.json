@@ -1,0 +1,7 @@
+{
+    "require": {
+        "telegram-bot/api": "^2.3",
+        "drandin/exchange-rate": "dev-master",
+        "doctrine/dbal": "^3.3"
+    }
+}
