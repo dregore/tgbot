@@ -45,14 +45,19 @@ $bot->command('help', function ($message) use ($bot) {
 
 // команда для получения курса валюты
 $bot->command('rate', function ($message) use ($bot, $queryBuilder) {
+    date_default_timezone_set("Europe/Moscow");
+    $date = date('Y-m-d H:i:s');
+    $moscow_date = new DateTime($date);
+    $user_date = $moscow_date->format('d-m-Y H:i:s');
+
     $exchangeRate = new ExchangeRate(new CBRClient());
     try {
          $currencyRate = $exchangeRate
-             ->setDate(new DateTime(date('Y-m-d')))
+             ->setDate($moscow_date)
              ->getCurrencyExchangeRates()
              ->getCurrencyRateBySymbolCode('USD');
     
-        $answer = 'На '.date('d-m-Y').' курс '.($currencyRate->getQuantity() ?? 1).' '.$currencyRate->getName().' равен '.$currencyRate->getExchangeRate().' рублей';
+        $answer = 'На '.$user_date.' курс '.($currencyRate->getQuantity() ?? 1).' '.$currencyRate->getName().' равен '.$currencyRate->getExchangeRate().' рублей';
         // Записываем по этому юзеру историю в базу
         $queryBuilder->insert('history')
                      ->values(['user_id' => '?', 
@@ -62,7 +67,7 @@ $bot->command('rate', function ($message) use ($bot, $queryBuilder) {
                                'currency_rate' => '?'
                       ])
                       ->setParameter(0, $message->getChat()->getId())
-                      ->setParameter(1, date('Y-m-d H:i:s'))
+                      ->setParameter(1, $date)
                       ->setParameter(2, $currencyRate->getQuantity())
                       ->setParameter(3, $currencyRate->getName())
                       ->setParameter(4, $currencyRate->getExchangeRate())
